@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Equativ Demo</title>
+    <script
+      type="text/javascript"
+      src="https://r.sascdn.com/video/config.js?nwid=5398"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://r.sascdn.com/video/controller.js?nwid=5398"
+    ></script>
+    <script
+      type="application/javascript"
+      src="https://ced.sascdn.com/tag/5398/smart.js"
+      async
+    ></script>
+    <script type="application/javascript">
+      (() => {
+        const sas = window.sas || {};
+        sas.cmd = sas.cmd || [];
+        sas.cmd.push(() => {
+          sas.setup({
+            networkid: 5398,
+            domain: "https://adapi-srv-apac.smartadserver.com",
+            async: true,
+          });
+          sas.call("onecall", {
+            siteId: 720141,
+            pageId: 2099224,
+            formats: [{ id: 143312 }, { id: 143273 }, { id: 143274 }],
+            target: "",
+          });
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <h2>HTML5 300x250</h2>
+    <div id="sas_143312"></div>
+    <script type="application/javascript">
+      sas.cmd.push(function () {
+        sas.render("143312"); // Format : L_REC_300-250 300x250
+      });
+    </script>
+    <h2>Equativ In-Stream Video Ad Demo</h2>
+    <p>
+      This demo showcases in-stream video advertising with preroll, midroll, and
+      postroll ads using the Equativ video plugin.
+    </p>
+    <!-- Video Player Container -->
+    <div
+      id="videoContainer"
+      style="margin: 20px 0; border-radius: 8px; overflow: hidden"
+    >
+      <video
+        id="mainVideo"
+        width="800"
+        height="450"
+        controls
+        preload="metadata"
+      >
+        <source
+          src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          type="video/mp4"
+        />
+        <source
+          src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.webm"
+          type="video/webm"
+        />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <!-- Equativ Video Plugin Integration Script -->
+    <script type="application/javascript">
+      (() => {
+        // Wait for SAS library to be fully loaded
+        const sas = window.sas || {};
+        sas.cmd = sas.cmd || [];
+
+        // Initialize Equativ Video Data
+        const sasVideoData = {
+          id: "videoContainer", // Use container ID instead of video ID
+          adData: {
+            sas_siteid: "720141",
+            sas_pageid: "2099224",
+            sas_pagename: "equativ-demo",
+            sas_target: "",
+            sas_format_linears: "143273",
+          },
+          // Correct ad rules format according to Equativ documentation
+          adRules: [
+            {
+              duration_min: 0,
+              duration_max: -1, // -1 means no upper limit
+              data: {
+                prerolls: {
+                  instances: 1,
+                  maxAdPodDuration: 30,
+                },
+                midrolls: {
+                  instances: 1,
+                  percents: [50], // Midroll at 50% of content
+                  maxAdPodDuration: 30,
+                },
+                postrolls: {
+                  instances: 1,
+                  maxAdPodDuration: 30,
+                },
+                overlays: {
+                  instances: 0, // Disable overlays
+                },
+              },
+              minimumDelayBetweenAdBreaks: 30,
+            },
+          ],
+          config: {
+            debug: true,
+            autoplay: false, // Changed to false to give better control
+            preloadAds: true,
+            skipOffset: 5,
+            maxDuration: 30,
+            playerTech: "html5",
+            adBreakTimeout: 10000, // Timeout for ad breaks
+            enableMidroll: true, // Explicitly enable midroll
+          },
+          callbacks: {
+            adBreakBegin: (adType, playerId) => {
+              logStatus(`Ad break started: ${adType} for player: ${playerId}`);
+              if (adType === "midroll") {
+                logStatus(`MIDROLL AD BREAK STARTED - Player: ${playerId}`);
+              }
+            },
+            adBreakEnd: (adType, playerId) => {
+              logStatus(`Ad break ended: ${adType} for player: ${playerId}`);
+              if (adType === "midroll") {
+                logStatus(`MIDROLL AD BREAK ENDED - Player: ${playerId}`);
+              }
+            },
+            adBegin: (data) => {
+              logStatus(
+                `Ad started: ${data.state} (${data.type}) - Controller: ${data.controllerID}`
+              );
+              if (data.state === "midroll" || data.type === "midroll") {
+                logStatus(
+                  `MIDROLL AD STARTED - Controller: ${data.controllerID}`
+                );
+              }
+            },
+            adEnd: (data) => {
+              logStatus(
+                `Ad ended: ${data.state} (${data.type}) - Controller: ${data.controllerID}`
+              );
+              if (data.state === "midroll" || data.type === "midroll") {
+                logStatus(
+                  `MIDROLL AD ENDED - Controller: ${data.controllerID}`
+                );
+              }
+            },
+            adError: (data) => {
+              logStatus(
+                `Ad error: Code ${data.errorCode} in ${data.state} - Controller: ${data.controllerID}`
+              );
+            },
+            singleError: (data) => {
+              logStatus(
+                `Single error: Code ${data.errorCode} - InsertionID: ${data.insertionID} - PageID: ${data.pageID}`
+              );
+            },
+            contentEnd: (data) => {
+              logStatus(`Content ended - Controller: ${data.controllerID}`);
+            },
+            videoEnd: (data) => {
+              logStatus(
+                `Video experience ended - Controller: ${data.controllerID}`
+              );
+            },
+            // Additional callbacks for better mid-roll debugging
+            adRequest: (data) => {
+              logStatus(
+                `Ad request made: ${data.type || "unknown"} - Position: ${
+                  data.position || "unknown"
+                }`
+              );
+            },
+            adResponse: (data) => {
+              logStatus(
+                `Ad response received: ${data.type || "unknown"} - Ads found: ${
+                  data.adCount || "unknown"
+                }`
+              );
+            },
+          },
+        };
+
+        // Register video plugin when SAS is ready
+        sas.cmd.push(() => {
+          // Wait for video element to be ready
+          const registerVideoPlugin = () => {
+            const videoElement = document.getElementById("mainVideo");
+            const containerElement = document.getElementById("videoContainer");
+
+            if (videoElement && containerElement) {
+              try {
+                // Ensure video is paused and at beginning for proper preroll
+                videoElement.pause();
+                videoElement.currentTime = 0;
+
+                sas.video.register(sasVideoData);
+                logStatus(
+                  "Equativ video plugin registered successfully with container: videoContainer"
+                );
+                logStatus(
+                  "Video plugin will now control playback for preroll ads"
+                );
+
+                // Add video event listeners after registration
+                videoElement.addEventListener("loadstart", () => {
+                  logStatus(
+                    "Video load started - plugin should check for preroll ads"
+                  );
+                });
+
+                // Important: Let the plugin handle the play event
+                videoElement.addEventListener("play", () => {
+                  logStatus(
+                    `Video play event intercepted - current time: ${videoElement.currentTime}`
+                  );
+                  if (videoElement.currentTime === 0) {
+                    logStatus(
+                      "Playing from start - preroll ad should display first"
+                    );
+                  }
+                });
+
+                // Override the play method to ensure plugin control
+                const originalPlay = videoElement.play;
+                videoElement.play = function () {
+                  logStatus(
+                    "Video play() called - letting plugin handle preroll"
+                  );
+                  return originalPlay.call(this);
+                };
+              } catch (error) {
+                logStatus(`Error registering video plugin: ${error.message}`);
+              }
+            } else {
+              logStatus("Video element or container not found, retrying...");
+              setTimeout(registerVideoPlugin, 100);
+            }
+          };
+
+          // Start registration process
+          registerVideoPlugin();
+        });
+
+        // Utility function to log status messages
+        const logStatus = (message) => {
+          // Only log to console since status display is removed
+          console.log(`[Equativ Demo] ${message}`);
+        };
+
+        // Check SAS library loading status
+        const checkSASStatus = () => {
+          logStatus("Checking SAS library status...");
+
+          if (typeof sas === "undefined") {
+            logStatus("ERROR: SAS library not loaded");
+            return false;
+          }
+
+          logStatus(`SAS object available: ${typeof sas}`);
+
+          if (sas.video) {
+            logStatus(`SAS video plugin available: ${typeof sas.video}`);
+            if (sas.video.register) {
+              logStatus("SAS video register method available");
+              return true;
+            } else {
+              logStatus("ERROR: SAS video register method not available");
+            }
+          } else {
+            logStatus("ERROR: SAS video plugin not available");
+          }
+
+          return false;
+        };
+
+        // Enhanced initialization check
+        const initializeDemo = () => {
+          logStatus("Demo initialization started");
+
+          // Check if all required elements exist
+          const video = document.getElementById("mainVideo");
+          const container = document.getElementById("videoContainer");
+
+          if (!video) {
+            logStatus("ERROR: Video element not found");
+            return;
+          }
+
+          if (!container) {
+            logStatus("ERROR: Video container not found");
+            return;
+          }
+
+          logStatus("Video elements found successfully");
+          logStatus(`Video ready state: ${video.readyState}`);
+          logStatus(`Video current src: ${video.currentSrc}`);
+
+          // Check SAS library
+          if (!checkSASStatus()) {
+            logStatus("Retrying SAS check in 1 second...");
+            setTimeout(initializeDemo, 1000);
+            return;
+          }
+
+          logStatus("All prerequisites met - demo ready");
+        };
+
+        // Video event listeners for additional logging
+        document.addEventListener("DOMContentLoaded", () => {
+          logStatus("DOM Content Loaded - starting initialization");
+          initializeDemo();
+
+          const video = document.getElementById("mainVideo");
+
+          video.addEventListener("loadedmetadata", () => {
+            logStatus(
+              `Video metadata loaded - Duration: ${Math.round(video.duration)}s`
+            );
+          });
+
+          video.addEventListener("loadstart", () => {
+            logStatus("Video load start event");
+          });
+
+          video.addEventListener("canplay", () => {
+            logStatus("Video can play event");
+          });
+
+          video.addEventListener("play", () => {
+            logStatus(
+              `Video play event - current time: ${Math.round(
+                video.currentTime
+              )}s`
+            );
+            if (video.currentTime === 0) {
+              logStatus(
+                "Starting from beginning - preroll should be triggered by plugin"
+              );
+            }
+          });
+
+          video.addEventListener("pause", () => {
+            logStatus(
+              `Video pause event - current time: ${Math.round(
+                video.currentTime
+              )}s`
+            );
+          });
+
+          video.addEventListener("ended", () => {
+            logStatus("Video content ended");
+          });
+
+          video.addEventListener("seeking", () => {
+            logStatus(`Video seeking to: ${Math.round(video.currentTime)}s`);
+          });
+
+          video.addEventListener("seeked", () => {
+            logStatus(`Video seeked to: ${Math.round(video.currentTime)}s`);
+            const progress = video.currentTime / video.duration;
+            if (progress >= 0.45 && progress <= 0.55) {
+              logStatus("Near midpoint - midroll should be triggered");
+            } else if (progress >= 0.9) {
+              logStatus("Near end - postroll should be triggered");
+            }
+          });
+
+          video.addEventListener("timeupdate", () => {
+            // Log quarter points for reference (throttled)
+            const progress = video.currentTime / video.duration;
+            const currentTime = Math.round(video.currentTime);
+
+            if (currentTime % 15 === 0 && currentTime > 0) {
+              logStatus(
+                `Video progress: ${Math.round(
+                  progress * 100
+                )}% (${currentTime}s)`
+              );
+            }
+
+            // Enhanced mid-roll detection
+            if (
+              progress >= 0.49 &&
+              progress <= 0.51 &&
+              !video.midrollTriggered
+            ) {
+              logStatus("Reached 50% - attempting to trigger midroll ad");
+              video.midrollTriggered = true;
+
+              // Manually trigger midroll if needed
+              try {
+                if (sas.video && sas.video.triggerAdBreak) {
+                  sas.video.triggerAdBreak("midroll", sasVideoData.id);
+                  logStatus("Manually triggered midroll ad break");
+                }
+              } catch (error) {
+                logStatus(`Error triggering midroll: ${error.message}`);
+              }
+            }
+
+            // Reset flag if user seeks back before midpoint
+            if (progress < 0.45) {
+              video.midrollTriggered = false;
+            }
+          });
+
+          video.addEventListener("error", (e) => {
+            logStatus(`Video error: ${e.message}`);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
